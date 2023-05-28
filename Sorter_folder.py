@@ -1,11 +1,10 @@
 import os
 import shutil
 from zipfile import ZipFile
-from threading import Thread, RLock
+import concurrent.futures
 from time import time
 import logging
 
-lock=RLock()
 
 path = 'D:/Мотлох/'
 list_ = os.listdir(path)
@@ -57,9 +56,7 @@ def normalize(name):
 
 
 
-def sort(locker,list_):
-        for file_ in list_:
-            locker.acquire()
+def sort(file_):
             logging.debug(file_)
             name, ext = os.path.splitext(file_)
             print(name)
@@ -69,8 +66,6 @@ def sort(locker,list_):
                 if name != 'images' or name != 'documents' or name != 'audio' or name != 'video' or name != 'archives':
                     if not os.listdir(file_):
                             os.rmdir(file_)
-                    else:
-                        continue
             else:
                     re_name = normalize(name)+'.'+ext
                     re_name_path = path+re_name
@@ -86,19 +81,14 @@ def sort(locker,list_):
                                 continue
                         else:
                             continue
-            locker.release()
 
 
 
 timer = time()
 logging.basicConfig(level=logging.DEBUG, format='%(threadName)s %(message)s')
-t1=Thread(target=sort, args=(lock,list_))
-t2=Thread(target=sort, args=(lock,list_))
-threads=[t1,t2]
-t1.start()
-t2.start()
 
-[el.join() for el in threads]
+with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        executor.map(sort, list_)
 
-print('yes')
+
 logging.debug(f'{time()-timer}')
