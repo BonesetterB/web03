@@ -87,7 +87,7 @@ def sort(file_):
 timer = time()
 logging.basicConfig(level=logging.DEBUG, format='%(threadName)s %(message)s')
 
-with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
         executor.map(sort, list_)
 
 
